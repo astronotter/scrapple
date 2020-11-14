@@ -261,7 +261,7 @@ async function getMove(req, res) {
 }
 
 const app = express()
-app.use(cors())
+app.use(cors({ 'origin':'astronotter.github.io' }))
 app.use(express.json())
 app.use(express.urlencoded({ extended:true }))
 app.post('/games', createGame)
