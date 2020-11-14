@@ -182,6 +182,7 @@ async function takeTurn(req, res) {
             rack: player.rack,
         },
         game: {
+            board: game.board,
             status: game.status,
             nextMove: game.nextMove,
             nextPlayer: game.nextPlayer

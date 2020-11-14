@@ -99,6 +99,24 @@ function placeable(board, placements) {
     return color
 }
 
+const styles = StyleSheet.create({
+    game: {
+        display: 'flex',
+        flexFlow: 'column',
+        height: '100vh'
+    },
+    board: {
+        overflow: 'scroll',
+        scrollbarWidth: 'none',
+        flexGrow: '1',
+        flexShrink: '1',
+        scrollSnapAlign: 'center',
+    },
+    row: {
+        whiteSpace: 'nowrap'
+    },
+})
+
 function Game(props) {
     const [player, setPlayer] = useState(null)
     const [game, setGame] = useState(null)
@@ -115,18 +133,18 @@ function Game(props) {
             else if (!game)
                 setGame(await getGame(params.game, player.id))
         })()
-    }, [player, game, params])
+    }, [player, game])
 
     useInterval(() => {
         (async () => {
             setGame(await getGame(params.game, player.id))
-            if (!isOurTurn) {
+            /*if (!isOurTurn) {
                 scrollView.current.scrollTo({
                     left: scrollView.current.scrollLeftMax/2,
                     top: scrollView.current.scrollTopMax/2,
                     behavior: 'smooth'
                 })
-            }
+            }*/
         })()
     }, isOurTurn? null : 3000)
 
@@ -154,70 +172,49 @@ function Game(props) {
             behavior: 'smooth'
         })
     }
-        
-    const styles = StyleSheet.create({
-        game: {
-            display: 'flex',
-            flexFlow: 'column',
-            height: '100vh'
-        },
-        board: {
-            overflow: 'scroll',
-            scrollbarWidth: 'none',
-            flexGrow: '1',
-            flexShrink: '1',
-            scrollSnapAlign: 'center',
-        },
-        row: {
-            whiteSpace: 'nowrap'
-        },
-    })
 
     const n = Math.sqrt(board.length)
     const color = placeable(board, placements)
-    const Board = (props) => (
-        <div className={css(styles.board)} >
-        {Array(n).fill(0).map((_, j) =>
-        <div className={css(styles.row)}>
-            {Array(n).fill(0).map((_, i) =>
-            placements.includes(j*n+i)
-            ?   <Piece
-                    key={j*n+i}
-                    draggable={isOurTurn}
-                    onDrag={e => { e.preventDefault(); setDragged(placements.indexOf(j*n+i)) }}
-                    onDragOver={e => e.preventDefault()}
-                    value={rack[placements.indexOf(j*n+i)]}>
-                </Piece>
-            :   <Piece
-                    style={{ opacity: (color[j*n+i] !== 0)? 1.0 : 0.5 }}
-                    key={j*n+i}
-                    draggable={false}
-                    onDragOver={e => e.preventDefault()}
-                    onDrop={e => { placements[dragged] = j*n+i; setPlacements(placements); setDragged(null) }}
-                    value={board[j*n+i]}>
-                </Piece>
-            )}
-        </div>
-        )}
-        </div>
-    )
 
     return (
         <div className={css(styles.game)}>
-            <Board board={board} placements={placements} ref={scrollView} isOurTurn={isOurTurn} />
-            <div className={css(styles.row)}>
-                {rack.map((el, i) => (
-                    <Piece
-                        key={i}
-                        draggable={isOurTurn}
-                        onDrag={e => { e.preventDefault(); setDragged(i) }}
-                        onDragOver={e => e.preventDefault()}
-                        onDrop={e => { placements[dragged] = null; setPlacements(placements); setDragged(null)} }
-                        value={placements[i] === null? el : ' ' }>
-                    </Piece>
-                ))}
-            <Button disabled={!isOurTurn} onClick={submit}>End Turn</Button>
-            </div>
+        <div className={css(styles.board)} ref={scrollView}>
+        {Array(n).fill(0).map((_, j) =>
+        <div className={css(styles.row)}>
+        {Array(n).fill(0).map((_, i) =>
+        placements.includes(j*n+i)
+        ?   <Piece
+                key={j*n+i}
+                draggable={isOurTurn}
+                onDrag={e => { e.preventDefault(); setDragged(placements.indexOf(j*n+i)) }}
+                onDragOver={e => e.preventDefault()}
+                value={rack[placements.indexOf(j*n+i)]}>
+            </Piece>
+        :   <Piece
+                style={{ opacity: (color[j*n+i] !== 0)? 1.0 : 0.5 }}
+                key={j*n+i}
+                draggable={false}
+                onDragOver={e => e.preventDefault()}
+                onDrop={e => { e.preventDefault(); placements[dragged] = j*n+i; setPlacements(placements); setDragged(null) }}
+                value={board[j*n+i]}>
+            </Piece>
+        )}
+        </div>
+        )}
+        </div>
+        <div className={css(styles.row)}>
+        {rack.map((el, i) => (
+        <Piece
+            key={i}
+            draggable={isOurTurn}
+            onDrag={e => { e.preventDefault(); setDragged(i) }}
+            onDragOver={e => e.preventDefault()}
+            onDrop={e => { placements[dragged] = null; setPlacements(placements); setDragged(null)} }
+            value={placements[i] === null? el : ' ' }>
+        </Piece>
+        ))}
+        <Button disabled={!isOurTurn} onClick={submit}>End Turn</Button>
+        </div>
         </div>
     )
 }
