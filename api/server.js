@@ -1,4 +1,5 @@
 const express = require('express')
+const https = require('https')
 const cors = require('cors')
 const { Sequelize, DataTypes, Utils } = require('sequelize')
 
@@ -267,4 +268,7 @@ app.get('/games/:game', getGame)
 app.post('/players', joinGame)
 app.get('/moves/:move', getMove)
 app.post('/moves/:move', takeTurn)
-app.listen(PORT, HOSTNAME, () => console.log(`Serving ${HOSTNAME}:${PORT}`))
+https.createServer({
+    key: fs.readFileSync('server.key'),
+    cert: fs.readFileSync('server.cert')
+}, app).listen(PORT, HOSTNAME, () => console.log(`Serving ${HOSTNAME}:${PORT}`))
