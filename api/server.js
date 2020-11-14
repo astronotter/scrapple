@@ -109,7 +109,7 @@ function tallyScore(placements, board) {
             across = across + board[k]
         if (across.length > 1) {
             if (!dict[across])
-                throw new Error('Unknown word ' + across)
+                ;//throw new Error('Unknown word ' + across)
             color[pos] &= 2
             score++
         }
@@ -125,7 +125,7 @@ function tallyScore(placements, board) {
         if (down.length > 1) {
             console.log('down: ' + down)
             if (!dict[down])
-                throw new Error('Unknown word ' + down)
+                ;//throw new Error('Unknown word ' + down)
             color[pos] &= 1
             score++
         }
