@@ -1,6 +1,7 @@
 const express = require('express')
 const https = require('https')
 const cors = require('cors')
+const fs = require('fs')
 const { Sequelize, DataTypes, Utils } = require('sequelize')
 
 const PORT = process.env.PORT || 3000
