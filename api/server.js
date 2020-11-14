@@ -1,8 +1,8 @@
 const express = require('express')
 const { Sequelize, DataTypes, Utils } = require('sequelize')
 
-const PORT = 3000
-const HOSTNAME = 'localhost'
+const PORT = process.env.PORT || 3000
+const HOSTNAME = process.env.HOSTNAME || 'localhost'
 
 const RACK_SIZE = 7
 const POOL_SIZE = 500
