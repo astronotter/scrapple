@@ -120,11 +120,13 @@ function Game(props) {
     useInterval(() => {
         (async () => {
             setGame(await getGame(params.game, player.id))
-            scrollView.current.scrollTo({
-                left: scrollView.current.scrollLeftMax/2,
-                top: scrollView.current.scrollTopMax/2,
-                behavior: 'smooth'
-            })
+            if (!isOurTurn) {
+                scrollView.current.scrollTo({
+                    left: scrollView.current.scrollLeftMax/2,
+                    top: scrollView.current.scrollTopMax/2,
+                    behavior: 'smooth'
+                })
+            }
         })()
     }, isOurTurn? null : 3000)
 
@@ -225,7 +227,7 @@ function NewGameForm() {
     const submit = async (e) => {
         e.preventDefault()
         const game = await createGame()
-        history.push(`/games/${game.id}`)
+        history.push(`/scrapple/games/${game.id}`)
     }
     return (
         <Container fluid>
@@ -265,8 +267,8 @@ ReactDOM.render(
         crossorigin="anonymous"
         />
         <Switch>
-            <Route path='/games/:game' component={Game} />
-            <Route path='/' component={NewGameForm} />
+            <Route path='/scrapple/games/:game' component={Game} />
+            <Route path='/scrapple/' component={NewGameForm} />
         </Switch>
     </Router>,
     document.getElementById('root')
