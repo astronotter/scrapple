@@ -1,4 +1,5 @@
 const express = require('express')
+const cors = require('cors')
 const { Sequelize, DataTypes, Utils } = require('sequelize')
 
 const PORT = process.env.PORT || 3000
@@ -258,6 +259,7 @@ async function getMove(req, res) {
 }
 
 const app = express()
+app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended:true }))
 app.post('/games', createGame)
