@@ -22,10 +22,13 @@ const post = async (url, body) => {
     });
     return await res.json()
 }
-const joinGame = (game) => post(`http://localhost:3000/players?game=${game}`)
-const getGame = (game, player) => get(`http://localhost:3000/games/${game}?player=${player}`)
-const takeTurn = (move, game, player, placements) => post(`http://localhost:3000/moves/${move}?game=${game}&player=${player}`, { placements:placements })
-const createGame = () => post('http://localhost:3000/games', { size:15, maxPlayers:2 })
+const HOSTNAME = 'otterspace.ca'
+const PORT = 3000
+
+const joinGame = (game) => post(`http://${HOSTNAME}:${PORT}/players?game=${game}`)
+const getGame = (game, player) => get(`http://${HOSTNAME}:${PORT}/games/${game}?player=${player}`)
+const takeTurn = (move, game, player, placements) => post(`http://${HOSTNAME}:${PORT}/moves/${move}?game=${game}&player=${player}`, { placements:placements })
+const createGame = () => post(`http://${HOSTNAME}:${PORT}/games`, { size:15, maxPlayers:2 })
 
 // Taken from
 // https://overreacted.io/making-setinterval-declarative-with-react-hooks/
