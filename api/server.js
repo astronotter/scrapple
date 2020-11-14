@@ -1,5 +1,7 @@
 const express = require('express')
 const cors = require('cors')
+const fs = require('fs')
+const https = require('https')
 const { Sequelize, DataTypes } = require('sequelize')
 
 const PORT = process.env.PORT || 3000
@@ -270,4 +272,9 @@ app.post('/moves/:move', takeTurn)
 app.get('/test', (req, res) => {
     res.send('Working.')
 })
-app.listen(PORT, HOSTNAME, () => console.log(`Serving ${HOSTNAME}:${PORT}`))
+https.createServer({
+    key: fs.readSync('server.key'),
+    cert: fs.readSync('server.cert')
+}, app).listen(PORT, HOSTNAME, () => {
+    console.log(`Serving ${HOSTNAME}:${PORT}`)
+})
