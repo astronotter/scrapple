@@ -273,8 +273,8 @@ app.get('/test', (req, res) => {
     res.send('Working.')
 })
 https.createServer({
-    key: fs.readSync('server.key'),
-    cert: fs.readSync('server.cert')
+    key: fs.readFileSync('server.key'),
+    cert: fs.readFileSync('server.cert')
 }, app).listen(PORT, HOSTNAME, () => {
     console.log(`Serving ${HOSTNAME}:${PORT}`)
 })
