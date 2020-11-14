@@ -1,8 +1,6 @@
 const express = require('express')
-const https = require('https')
 const cors = require('cors')
-const fs = require('fs')
-const { Sequelize, DataTypes, Utils } = require('sequelize')
+const { Sequelize, DataTypes } = require('sequelize')
 
 const PORT = process.env.PORT || 3000
 const HOSTNAME = process.env.HOSTNAME || 'localhost'
@@ -146,7 +144,7 @@ async function takeTurn(req, res) {
     const move = Move.build({
         GameId: game.id,
         PlayerId: player.id,
-        id: req.params.move,
+        order: req.params.move,
         placements: req.body.placements
     })
 
@@ -255,13 +253,13 @@ async function getGame(req, res) {
 async function getMove(req, res) {
     const move = await Move.findOne({ where: {
         GameId: req.query.game,
-        id: req.params.move
+        order: req.params.move
     }})
     req.json({ placements: move.placements })
 }
 
 const app = express()
-app.use(cors({ 'origin':'astronotter.github.io' }))
+app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended:true }))
 app.post('/games', createGame)
@@ -269,7 +267,4 @@ app.get('/games/:game', getGame)
 app.post('/players', joinGame)
 app.get('/moves/:move', getMove)
 app.post('/moves/:move', takeTurn)
-https.createServer({
-    key: fs.readFileSync('server.key'),
-    cert: fs.readFileSync('server.cert')
-}, app).listen(PORT, HOSTNAME, () => console.log(`Serving ${HOSTNAME}:${PORT}`))
+app.listen(PORT, HOSTNAME, () => console.log(`Serving ${HOSTNAME}:${PORT}`))
