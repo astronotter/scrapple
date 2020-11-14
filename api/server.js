@@ -150,7 +150,7 @@ async function takeTurn(req, res) {
         placements: req.body.placements
     })
 
-    if (game.nextMove != move.id)
+    if (game.nextMove != move.order)
         throw new Error('Not next turn')
     if (game.nextPlayer != player.order)
         throw new Error('Not player\'s turn')
