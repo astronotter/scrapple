@@ -267,4 +267,7 @@ app.get('/games/:game', getGame)
 app.post('/players', joinGame)
 app.get('/moves/:move', getMove)
 app.post('/moves/:move', takeTurn)
+app.get('/test', (req, res) => {
+    res.send('Working.')
+})
 app.listen(PORT, HOSTNAME, () => console.log(`Serving ${HOSTNAME}:${PORT}`))
