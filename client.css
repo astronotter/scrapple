@@ -1,0 +1,26 @@
+.piece {
+    display: inline-block;
+    margin: 2px;
+    width: 80px; height: 80px;
+    text-align: center;
+    vertical-align: top;
+    line-height: 80px;
+    cursor: pointer;
+    background-color: #eee;
+}
+.hilight {
+    opacity: 0.5;
+}
+.pulse {
+    animation-name: pulse;
+    animation-duration: 0.25s;
+    animation-timing-function: ease-in-out;
+}
+@keyframes pulse {
+    from, to {
+        background-color: #eee;
+    }
+    50% {
+        background-color: #fbb;
+    }
+}
