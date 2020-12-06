@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+  padding: 2em;
+  font: 'Rockwell', serif;
+  text-align: justify;
+  color: #333;
+}
+.container {
+  /*max-width: 800px;*/
+  margin: 0 auto;
+  column-width: 24em;
+  column-gap: 2em;
+  column-rule: 1px solid #ccc;
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Gochago</h1>
+<h2>Introduction</h2>
+<p>In this article we will use the React framework to create a Japanese crossword building board game (similar to Scrabble) as a tool for those interested in learning the language. React is a modern open-source Javascript framework backed by Facebook for building user interfaces, both web pages and stand-alone applications.</p>
+
+<h2>Piece</h2>
+<p>Let's look at the simplest component, the piece. A piece contains, as its child a single kana, or is otherwise empty. Pieces may be draggable, so we pass through attributes known as <em>props</em> to allow the parent component to enable this, as well as provide hooks for its handling.</p>
+
+<xmp>
+function Piece({ children, flags, ...rest }) {
+    let className = 'piece'
+    if (flags & 1) className += ' hilight'
+    if (flags & 2) className += ' pulse'
+    return (
+        <div className={className} {...rest}>
+        {children}
+        </div>
+    )
+}
+</xmp>
+<p>There is a bit of debate in the React community over whether or not to include style directly in the components. Proponents of including the style within components argue that it keeps the relevant styles near to their use which improves the locality of code, whereas its opponents say that keeping them in stylesheets improves performance.</p>
+<p>Since we are using a literate programming style however, we get the best of both worlds. We will keep relevant styles close to their components, but also have them output to a separate stylesheet for best performance.</p>
+
+<xmp>
+.piece {
+    display: inline-block;
+    margin: 2px;
+    width: 80px; height: 80px;
+    text-align: center;
+    vertical-align: top;
+    line-height: 80px;
+    cursor: pointer;
+    background-color: #eee;
+}
+</xmp>
+
+<p>Pieces can be also be hilighted or pulsed, depending on the flags provided. Pulsing is done using a CSS animation to momentarily change the background color.</p>
+
+<xmp>
+.hilight {
+    opacity: 0.5;
+}
+
+.pulse {
+    animation-name: pulse;
+    animation-duration: 0.5s;
+    animation-timing-function: ease-in-out;
+}
+@keyframes pulse {
+    from, to {
+        background-color: #eee;
+    }
+    50% {
+        background-color: #fbb;
+    }
+}
+</xmp>
+
+<h2>Grid</h2>
+<p>Pieces are are grouped into ordered collections of grids. The grid is backed by an array of elements, and an optional array of flags which are applied to each piece. In addition to the flags provided by the <a href="#piece">Piece</a> component, pieces can also be frozen in place. Otherwise pieces in the grid can be rearranged by the player through the HTML5 drag-n-drop protocol.</p>
+
+<xmp>
+function Grid({ onSwap, rows, cols, els, flags }) {
+    const dragStart = (e, k) =>
+        window.dragged = x => {
+            let y = els[k]
+            els[k] = x
+            return y
+        }
+    const drop = (e, k) => {
+        e.preventDefault()
+        els[k] = window.dragged(els[k])
+        onSwap()
+    }
+    return (
+        <div>{Array(rows).fill(0).map((_, j) => (
+        <div>{Array(cols).fill(0).map((_, i) => {
+            const k = j*cols+i
+            const isFrozen = !onSwap || (flags?.[k] & 8)
+            return (
+                <Piece key={k}
+                    flags={flags?.[k]}
+                    onDragOver={(!isFrozen)?
+                      (e => e.preventDefault()) : undefined}
+                    onDragStart={e => dragStart(e, k)}
+                    onDrop={e => drop(e, k)}
+                    draggable={(els[k] && !isFrozen)?
+                      true : undefined}>
+                {els[k]}
+                </Piece>
+            )
+        })}</div>
+        ))}</div>
+    )
+}
+</xmp>
+
+<h2>Client</h2>
+<p>The client is the main component for the game. It contains the board and the player's kana rack, and provides state to them. It also mediates changes from both the server and the player.</p>
+<xmp>
+function Gochago({ con, size }) {
+    const [state, setState] = React.useState({ isLoaded: false })
+    useInterval(() => setState(con.update(state)),
+        state.isTurn? null : 3000)
+    
+    if (!state.isLoaded)
+        return <p>Loading...</p>
+    
+    const board = [...state.board]
+    const rack = [...state.rack]
+    const flags = [...state.flags]
+    return (
+        <div>
+        <Grid rows={size} cols={size} els={board}
+            flags={hilight(board, size, flags)}
+            onSwap={() => setState({...state,board,rack})} />
+        <Grid rows={1} cols={7} els={rack}
+            onSwap={() => setState({...state,board,rack})} />
+        <input type='button' disabled={!state.isTurn}
+            onClick={() => setState(con.submit(state))}></input>
+        </div>
+    )
+}
+</xmp>
+
+<p>The `useInterval` hook is taken from <a href="https://overreacted.io/making-setinterval-declarative-with-react-hooks/">this article</a>. It allows us to poll the game on a variable time interval. This way we can pause updates while it is the player's turn and then resume when they submit.</p>
+
+<xmp>
+function useInterval(callback, delay) {
+    const savedCallback = React.useRef();
+
+    // Remember the latest callback.
+    React.useEffect(() => {
+        savedCallback.current = callback;
+    }, [callback]);
+
+    // Set up the interval.
+    React.useEffect(() => {
+        function tick() {
+            savedCallback.current();
+        }
+        if (delay !== null) {
+            let id = setInterval(tick, delay);
+            return () => clearInterval(id);
+        }
+    }, [delay]);
+}
+</xmp>
+<p>Pieces which the player can use to place pieces will be dynamically hilighted using a depth-first connectivity search from the center of the board.</p>
+
+<xmp>
+function hilight(board, size, flags) {
+    const queue = [Math.floor(size*size / 2)]
+    while (queue.length) {
+        const top = queue.pop()
+        flags[top] |= 1
+        if (board[top]) {
+            for (let k of [top+size, top-size, top+1, top-1])
+                if (k >= 0 && k < size*size && !(flags[k] & 1))
+                    queue.push(k)
+        }
+    }
+    return flags
+}
+</xmp>
+
+<p>The connection to a game instance is abstracted by the Connection interface. We will create a single player version in this article and extend it to a multiplayer connection to a server in the next.</p>
+
+<xmp>
+function SingleplayerConnection(size) {
+    this.game = {
+        width: size,
+        board: Array(5*5).fill(null),
+        flags: Array(5*5).fill(0),
+        isTurn: true,
+        rack: ['a','b','c','d','e','f','g'],
+        isLoaded: true,
+    }
+}
+SingleplayerConnection.prototype.update = function(game) {    
+    this.game = { ...game, ...this.game }
+    return this.game
+}
+SingleplayerConnection.prototype.submit = function(game) {
+    if (game.isTurn)
+        setTimeout(() => {
+            const n = this.game.width
+            const k = Math.floor(Math.random() * n ** 2)
+            this.game.board[k] = 'A'
+            this.game.flags[k] |= 10
+            this.game.isTurn = true
+        }, 5000)
+    this.game = { ...this.game, ...game }
+    this.game.isTurn = !game.isTurn
+    // Freeze the board
+    for (let k = 0; k < this.game.width*this.game.width; k++)
+        if (this.game.board[k])
+            this.game.flags[k] |= 8
+    return this.game
+}
+</xmp>
+</body>
+</div>
+</html>
